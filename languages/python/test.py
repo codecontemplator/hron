@@ -3,16 +3,16 @@ import hron
 
 class RegexCacheTest(unittest.TestCase):
     def test_CacheHit(self):
-        cache = hron._RegexCache(lambda i: "\d{" + str(i) + "}");
+        cache = hron._RegexCache(lambda i: "\d{" + str(i) + "}")
         re = cache.get(4)
         self.assertEqual(re.pattern, "\d{4}")
-        self.assertTrue(re.match("1234"));
+        self.assertTrue(re.match("1234"))
 
     def test_CacheMiss(self):
-        cache = hron._RegexCache(lambda i: "\d{" + str(i) + "}");
+        cache = hron._RegexCache(lambda i: "\d{" + str(i) + "}")
         re = cache.get(14)
         self.assertEqual(re.pattern, "\d{14}")
-        self.assertTrue(re.match("12345678901234"));
+        self.assertTrue(re.match("12345678901234"))
 
 class DeserializationTests(unittest.TestCase):
     def _getTestData(self, fileid):
