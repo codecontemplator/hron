@@ -8,7 +8,7 @@ class _RegexCache:
         if index < len(self.cache):
             return self.cache[index];
         else:
-            return re.RegexObject(self.functor(i))
+            return re.compile(self.functor(index))
 
 class _Patterns:
     preprocessor = re.compile("^!(.*)");
