@@ -18,7 +18,7 @@ class _Patterns:
     valueDefCache = _RegexCache(lambda indent: "^\\t{" + str(indent) + "}=(.*)")
     objectDefCache = _RegexCache(lambda indent: "^\\t{" + str(indent) + "}@(.*)")
 
-class Dynamic:
+class _Dynamic:
     pass;
 
 class DeserializationState:
@@ -26,7 +26,7 @@ class DeserializationState:
         self.lines = text;
         self.currentIndent = 0;
         self.actionLog = None;
-        self.objectStack = [Dynamic()];
+        self.objectStack = [_Dynamic()];
         self.index = 0;
     @property
     def currentLine(self):
@@ -46,13 +46,13 @@ class DeserializationState:
     def enableLogging(self):
         self.actionLog = []
 
-def deserializePreprocessors(state):
+def _deserializePreprocessors(state):
     match = _Patterns.preprocessor.search(state.currentLine);
     while match: 
         state.skipLine("PreProcessor", match.group(1));
         match = _Patterns.preprocessor.search(state.currentLine)
 
-def deserializeValueLines(state):
+def _deserializeValueLines(state):
     reNonEmptyLine = _Patterns.nonEmptyLineCache.get(state.currentIndent);
     stop = False;
     result = [];
@@ -77,7 +77,7 @@ def deserializeValueLines(state):
 
     return "\n".join(result);
 
-def tryDeserializeValue(state):
+def _tryDeserializeValue(state):
     re = _Patterns.valueDefCache.get(state.currentIndent);
     match = re.search(state.currentLine);
     result = None;
@@ -85,14 +85,14 @@ def tryDeserializeValue(state):
         state.skipLine("Value_Begin", match.group(1));
         key = match.group(1);
         state.currentIndent += 1;
-        value = deserializeValueLines(state);
+        value = _deserializeValueLines(state);
         state.currentIndent -= 1;
         state.log("Value_End", match.group(1));
         result = (key, value)    
 
     return result;
 
-def tryDeserializeObject(state):
+def _tryDeserializeObject(state):
     re = _Patterns.objectDefCache.get(state.currentIndent);
     match = re.search(state.currentLine);
     result = None
@@ -100,8 +100,8 @@ def tryDeserializeObject(state):
         state.skipLine("Object_Begin", match.group(1));
         key = match.group(1);
         state.currentIndent += 1;
-        state.objectStack.append(Dynamic());
-        deserializeMembers(state);
+        state.objectStack.append(_Dynamic());
+        _deserializeMembers(state);
         value = state.objectStack.pop();
         state.currentIndent -= 1;
         state.log("Object_End", match.group(1));
@@ -109,7 +109,7 @@ def tryDeserializeObject(state):
 
     return result;
 
-def addPropertyToCurrentObject(state, name, value):
+def _addPropertyToCurrentObject(state, name, value):
     o = state.currentObject;
     if hasattr(o, name):
         a = getattr(o, name);
@@ -120,17 +120,17 @@ def addPropertyToCurrentObject(state, name, value):
     else:
         setattr(o, name, value)
 
-def deserializeMembers(state):
+def _deserializeMembers(state):
     stop = False;
     while(not(stop) and not(state.eos)):
-        value = tryDeserializeValue(state);
+        value = _tryDeserializeValue(state);
         if value:
-            addPropertyToCurrentObject(state, value[0], value[1])
+            _addPropertyToCurrentObject(state, value[0], value[1])
             continue;            
 
-        object = tryDeserializeObject(state);
+        object = _tryDeserializeObject(state);
         if object:
-            addPropertyToCurrentObject(state, object[0], object[1]);
+            _addPropertyToCurrentObject(state, object[0], object[1]);
             continue;
 
         match = _Patterns.commentLine.search(state.currentLine); 
@@ -145,8 +145,11 @@ def deserializeMembers(state):
 
         stop = True;            
 
-def deserialize(arg):
+def _deserialize(arg):
     state = arg if isinstance(arg, DeserializationState) else DeserializationState(arg);
-    deserializePreprocessors(state);
-    deserializeMembers(state);
+    _deserializePreprocessors(state);
+    _deserializeMembers(state);
     return state.currentObject;
+
+def parse(arg):
+    return _deserialize(arg)

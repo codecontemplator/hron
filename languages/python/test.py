@@ -6,31 +6,28 @@ class Helpers:
         with open('..\\..\\reference-data\\' + fileid, 'r', encoding='utf-8-sig') as f:
             return f.readlines()
 
-    def run(tid):
+    def run(tid, runner):
         text = Helpers.get_test_data(tid)
         ctx = hron.DeserializationState(text)
         ctx.enableLogging()
-        o = hron.deserialize(ctx)
+        o = hron.parse(ctx)
+        runner.assertIsNotNone(o)
         log = ctx.actionLog
         logRef = list(map(lambda s: str.rstrip(s, "\r\n"), Helpers.get_test_data(tid + ".actionlog")))
-        return (log, logRef)
+        runner.assertEqual(log, logRef)
 
 class DeserializationTests(unittest.TestCase):
     def test_Deserialize_HelloWorld(self):
-        (log, logRef) = Helpers.run("helloworld.hron")
-        self.assertEqual(log, logRef);
+        Helpers.run("helloworld.hron", self)
 
     def test_Deserialize_Simple(self):
-        (log, logRef) = Helpers.run("simple.hron")
-        self.assertEqual(log, logRef);
+        Helpers.run("simple.hron", self)
 
     def test_Deserialize_Random(self):
-        (log, logRef) = Helpers.run("random.hron")
-        self.assertEqual(log, logRef);
+        Helpers.run("random.hron", self)
 
     def test_Deserialize_Large(self):
-        (log, logRef) = Helpers.run("large.hron")
-        self.assertEqual(log, logRef);
+        Helpers.run("large.hron", self)
 
 if __name__ == '__main__':
     unittest.main()
