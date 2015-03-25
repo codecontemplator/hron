@@ -1,4 +1,15 @@
+####################################################################
+# hron parsing and serialization library
+# 
+# Daniel Brännström, 2015
+####################################################################
+
 import re
+import collections
+
+####################################################################
+# parsing (deserialization)
+####################################################################
 
 class _RegexCache:
     def __init__(self, functor):
@@ -153,3 +164,59 @@ def _deserialize(arg):
 
 def parse(arg):
     return _deserialize(arg)
+
+####################################################################
+# serialization
+####################################################################
+
+class SerializationState:
+    def __init__(self):
+        self.indent = ""
+        self.result = []
+
+    def push(self, str):
+        self.result.append(self.indent + str);
+    
+    def incIndent(self):
+        self.indent += "\t";
+    
+    def decIndent(self):
+        self.indent = self.indent[0:-1];
+    
+def getKeyValues(object):
+    if isinstance(object, dict):
+        return list(object.items())
+    else:
+        return [(a,getattr(object,a)) for a in dir(object) if not a.startswith('__') and not callable(getattr(object,a))]
+
+def serializeMembers(state, object):
+    keyValues = getKeyValues(object)
+    keyValues.sort(key=lambda kv: kv[0])
+
+    for key, value in keyValues:
+        if isinstance(value, collections.Iterable) and not(isinstance(value, (str,dict))):
+            for elem in iter(value):
+                serializeInstance(state, key, elem)
+        else:
+            serializeInstance(state, key, value)
+
+def serializeInstance(state, name, instance):
+    symbol = '=' if isinstance(instance, (str, int, float)) else '@' 
+    state.push(symbol + name)
+    state.incIndent()
+
+    if isinstance(instance, str):
+        for line in instance.split('\n'):
+            state.push(line);
+    elif isinstance(instance, (int, float)): 
+        state.push(str(instance));                
+    else:   
+        serializeMembers(state, instance);        
+        
+    state.decIndent();                
+
+def serialize(object):
+    state = SerializationState();
+    serializeMembers(state, object);
+    return "\n".join(state.result);
+

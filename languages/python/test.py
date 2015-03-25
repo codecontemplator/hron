@@ -41,5 +41,41 @@ class DeserializationTests(unittest.TestCase):
     def test_Deserialize_Large(self):
         self._run("large.hron")
 
+class SerializationTests(unittest.TestCase):
+    def test_Basic(self):
+        o = hron._Dynamic()
+        o.logPath = "Logs\\CurrentDay"
+        o.welcomeMessage = "Hello there"
+        o.names = ["Daniel", "Sven", "Kalle"]
+        o.persons = { 'Tony': 10, 'August': 30 }
+        o2 = hron._Dynamic()
+        o2.prop1 = "Again\nThere is more too it"
+        o2.prop2 = "Even more"
+        o.complex = o2;
+        hronString = hron.serialize(o)
+        expected = """\
+@complex
+	=prop1
+		Again
+		There is more too it
+	=prop2
+		Even more
+=logPath
+	Logs\CurrentDay
+=names
+	Daniel
+=names
+	Sven
+=names
+	Kalle
+@persons
+	=August
+		30
+	=Tony
+		10
+=welcomeMessage
+	Hello there"""
+        self.assertEqual(hronString, expected)
+
 if __name__ == '__main__':
     unittest.main()
