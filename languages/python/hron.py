@@ -206,7 +206,7 @@ def serializeInstance(state, name, instance):
     state.incIndent()
 
     if isinstance(instance, str):
-        for line in instance.split('\n'):
+        for line in instance.split("\n"):
             state.push(line);
     elif isinstance(instance, (int, float)): 
         state.push(str(instance));                
