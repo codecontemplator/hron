@@ -49,7 +49,7 @@ class SerializationTests(unittest.TestCase):
         o.names = ["Daniel", "Sven", "Kalle"]
         o.persons = { 'Tony': 10, 'August': 30 }
         o2 = hron._Dynamic()
-        o2.prop1 = "Again\nThere is more too it"
+        o2.prop1 = "Again\nThere is more to it"
         o2.prop2 = "Even more"
         o.complex = o2;
         hronString = hron.serialize(o)
@@ -57,7 +57,7 @@ class SerializationTests(unittest.TestCase):
 @complex
 	=prop1
 		Again
-		There is more too it
+		There is more to it
 	=prop2
 		Even more
 =logPath
