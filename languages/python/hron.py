@@ -32,7 +32,7 @@ class _Patterns:
 class _Dynamic:
     pass;
 
-class DeserializationState:
+class _DeserializationState:
     def __init__(self, text):
         self.lines = text
         self.currentIndent = 0
@@ -157,7 +157,7 @@ def _deserializeMembers(state):
         stop = True            
 
 def _deserialize(arg):
-    state = arg if isinstance(arg, DeserializationState) else DeserializationState(arg)
+    state = arg if isinstance(arg, _DeserializationState) else _DeserializationState(arg)
     _deserializePreprocessors(state)
     _deserializeMembers(state)
     return state.currentObject
@@ -169,7 +169,7 @@ def parse(arg):
 # serialization
 ####################################################################
 
-class SerializationState:
+class _SerializationState:
     def __init__(self):
         self.indent = ""
         self.result = []
@@ -183,24 +183,24 @@ class SerializationState:
     def decIndent(self):
         self.indent = self.indent[0:-1];
     
-def getKeyValues(object):
+def _getKeyValues(object):
     if isinstance(object, dict):
         return list(object.items())
     else:
         return [(a,getattr(object,a)) for a in dir(object) if not a.startswith('__') and not callable(getattr(object,a))]
 
-def serializeMembers(state, object):
-    keyValues = getKeyValues(object)
+def _serializeMembers(state, object):
+    keyValues = _getKeyValues(object)
     keyValues.sort(key=lambda kv: kv[0])
 
     for key, value in keyValues:
         if isinstance(value, collections.Iterable) and not(isinstance(value, (str,dict))):
             for elem in iter(value):
-                serializeInstance(state, key, elem)
+                _serializeInstance(state, key, elem)
         else:
-            serializeInstance(state, key, value)
+            _serializeInstance(state, key, value)
 
-def serializeInstance(state, name, instance):
+def _serializeInstance(state, name, instance):
     symbol = '=' if isinstance(instance, (str, int, float)) else '@' 
     state.push(symbol + name)
     state.incIndent()
@@ -211,12 +211,12 @@ def serializeInstance(state, name, instance):
     elif isinstance(instance, (int, float)): 
         state.push(str(instance));                
     else:   
-        serializeMembers(state, instance);        
+        _serializeMembers(state, instance);        
         
     state.decIndent();                
 
 def serialize(object):
-    state = SerializationState();
-    serializeMembers(state, object);
+    state = _SerializationState();
+    _serializeMembers(state, object);
     return "\n".join(state.result);
 

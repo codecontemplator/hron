@@ -21,7 +21,7 @@ class DeserializationTests(unittest.TestCase):
 
     def _run(self, tid):
         text = self._getTestData(tid)
-        ctx = hron.DeserializationState(text)
+        ctx = hron._DeserializationState(text)
         ctx.enableLogging()
         o = hron.parse(ctx)
         self.assertIsNotNone(o)
