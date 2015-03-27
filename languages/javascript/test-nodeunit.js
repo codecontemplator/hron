@@ -64,8 +64,7 @@ exports.testLarge = function(test) {
 	test.done();
 };
 
-exports.testSerialization = function(test) {
-	var o = {
+var hronObject = {
 		intVal: 10,
 		floatVal: 59.2,
 		stringVal: 'apa\nbepa\ncepa',
@@ -79,7 +78,7 @@ exports.testSerialization = function(test) {
 		}
 	};
 
-	var serializedRef = 
+var hronObjectSerialized =	
 		"=floatVal\n" 	+
 		"\t59.2\n"		+
 		"=intVal\n" 	+
@@ -108,7 +107,14 @@ exports.testSerialization = function(test) {
 		"\tbepa\n"		+
 		"\tcepa";
 
-	var serialized = hron.serialize(o);
-	test.equal(serialized, serializedRef);
+exports.testSerialization = function(test) {
+	var serialized = hron.serialize(hronObject);
+	test.equal(serialized, hronObjectSerialized);
+	test.done();
+};
+
+exports.testDeserialization = function(test) {
+	var object = hron.parse(hronObjectSerialized);
+	test.deepEqual(object, hronObject);
 	test.done();
 };
