@@ -26,7 +26,7 @@ module.exports = function( grunt ) {
     }, 
 
     jshint: {
-      src: [ 'hron.js' ],
+      src: [ 'grunt.js', 'hron.js', 'test-nodeunit.js' ],
       options: grunt.file.readJSON('.jshintrc')
     },
 

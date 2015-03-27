@@ -5,6 +5,8 @@
 // to run tests manually: 
 //   >nodeunit test-nodeunit.js
 
+/*jshint node: true, strict: false */
+
 var fs = require("fs");
 var hron = require("./hron.js");
 
@@ -12,7 +14,7 @@ function getTestData(testid) {
 
 	function readTextFile(file) {
 		var data = fs.readFileSync(file, "utf8");
-		data = data.replace(/^\uFEFF/, '')
+		data = data.replace(/^\uFEFF/, '');
 		return data;	
 	}
 
@@ -45,22 +47,22 @@ function run(test, testdata) {
 exports.testHelloWorld = function(test) {
 	run(test, testdata.helloworld);
 	test.done();
-}
+};
 
 exports.testSimple = function(test) {
 	run(test, testdata.simple);
 	test.done();
-}
+};
 
 exports.testRandom = function(test) {
 	run(test, testdata.random);
 	test.done();
-}
+};
 
 exports.testLarge = function(test) {
 	run(test, testdata.large);
 	test.done();
-}
+};
 
 exports.testSerialization = function(test) {
 	var o = {
@@ -109,4 +111,4 @@ exports.testSerialization = function(test) {
 	var serialized = hron.serialize(o);
 	test.equal(serialized, serializedRef);
 	test.done();
-}
+};
