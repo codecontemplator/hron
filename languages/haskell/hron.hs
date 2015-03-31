@@ -45,18 +45,15 @@ eol = void(oneOf "\n") -- <|> eof
 any_indention = void(manyTill space eol)  -- fix this
 
 indent = do
-	traceM $ "++indent"
 	modifyState (\i -> i + 1)
 	return ()
 
 dedent = do
-	traceM $ "--indent"
 	modifyState (\i -> i - 1)
 	return ()
 
 indention = do
 	i <- getState
-	traceM $ "indent size: " ++ show i
 	count i (char '\t')
 	return ()
 
@@ -65,12 +62,8 @@ empty_string = void $ manyTill space (try eol)
 hron_string = manyTill anyChar (try eol)
 
 comment_string = do
-	--any_indention
-	traceM "comment_string 1"
-	try $ spaces >> char '#'
-	traceM "comment_string 2"
+	try $ spaces >> char '#'  -- todo: spaces might consume an entire row
 	s <- hron_string
-	traceM $ "CommentString:" ++ s
 	return s
 
 preprocessor = do
@@ -82,18 +75,15 @@ preprocessors = many preprocessor
 
 empty_line = do
 	empty_string 
---	eol
 	return $ EmptyLine
 
 comment_line = do
 	s <- comment_string
---	eol
 	return $ CommentLine s
 
 nonempty_line = do
 	indention 
 	s <- hron_string
---	eol
 	return $ ContentLine s
 
 value_line = nonempty_line <|> comment_line <|> empty_line 
@@ -101,36 +91,24 @@ value_line = nonempty_line <|> comment_line <|> empty_line
 value_lines = many (try value_line)
 
 value = do
-	traceM $ "+value+"
 	try $ indention >> char '='	
 	tag <- hron_string
-	traceM $ "value: " ++ tag
-	--eol
 	indent
 	lines <- value_lines
 	dedent
 	return $ Value tag lines
 
 empty = do
-	traceM $ "+empty+"
 	empty_string
---	eol
-	traceM $ "empty:"
 	return Empty
 
 comment = do 
-	traceM $ "+comment+"
 	cs <- comment_string 
---	eol
-	traceM $ "comment: " ++ cs
 	return $ Comment cs
 
 object = do
-	traceM $ "+object+"
 	try $ indention >> char '@'
 	tag <- hron_string
-	traceM $ "Object: " ++ tag
---	eol
 	indent
 	mbs <- members
 	dedent
@@ -146,6 +124,7 @@ hron = do
 
 hron_parse input = runParser hron 0 "" input
 
+{-
 input_text = unlines [
 	"!abc",
     "=Welcome message",
@@ -209,3 +188,4 @@ input_text3 = unlines [
 	"\t\tData Source=.\\SQLEXPRESS;Initial Catalog=Partners\t",
 	""
 	]
+-}
