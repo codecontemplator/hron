@@ -2,11 +2,11 @@ import Text.Parsec hiding (State)
 import Text.Parsec.Indent
 import Control.Monad.State
 
-type IParser a = ParsecT String () (State SourcePos) a
+type IParser a = ParsecT String Int (State SourcePos) a
 
-iParse :: IParser a -> SourceName -> String -> Either ParseError a
-iParse aParser source_name input =
-  runIndent source_name $ runParserT aParser () source_name input
+iParse :: IParser a -> Int -> String -> Either ParseError a
+iParse aParser i input =
+  runIndent "" $ runParserT aParser () "" input
 
 input_text :: String
 input_text = unlines [
@@ -19,7 +19,7 @@ input_text = unlines [
 
 main :: IO ()
 main = do
-  case iParse aNamedList "indented_example" input_text of
+  case iParse aNamedList 0 input_text of
     Left  err    -> print err
     Right result -> putStrLn $ "I parsed: " ++ show result
 
@@ -29,20 +29,18 @@ data NamedList = NamedList Name [Item]
 type Name = String
 type Item = String
 
-withBlock2 f a p = withPos $ do
-    r1 <- a
-    r2 <- block2 p
-    return (f r1 r2)
-
-block2 p = withPos $ do
-    r <- many1 ((checkIndent >> p) <|> aComment)
-    return r
+indent p = do
+	i <- get 
+	r <- put (i+1) >> p
+	return r
 
 aNamedList :: IParser NamedList
 aNamedList = do
-  b <- withBlock2 NamedList aName anItem
+  name <- aName
+  items <- indent $ many1 ((checkIndent >> anItem) <|> aComment) 
+  --b <- withBlock2 NamedList aName anItem
   spaces
-  return b
+  return (NamedList name items)
 
 aComment :: IParser String
 aComment = do

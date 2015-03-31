@@ -23,43 +23,43 @@ eol = void(oneOf "\n") --	<|> eof
 any_indention = void(manyTill space eol)  -- fix this
 
 indent = do
- 			modifyState (1 +)
-			return ()
+	modifyState (\i -> i + 1)
+	return ()
 
 dedent = do
- 			modifyState (\x -> x - 1)
-			return ()
+	modifyState (\i -> i - 1)
+	return ()
 
 indention = do
-				i <- getState
-				count i (char '\t')
-				return ()
+	i <- getState
+	count i (char '\t')
+	return ()
 
 empty_string = void $ manyTill space (try eol) 
 
 hron_string = manyTill anyChar (try eol)
 
 comment_string = do
-					any_indention
-					char '#'
-					s <- hron_string
-					return s
+	any_indention
+	char '#'
+	s <- hron_string
+	return s
 
 empty_line = do
-				empty_string 
---				eol
-				return $ EmptyLine
+	empty_string 
+--	eol
+	return $ EmptyLine
 
 comment_line = do
-					s <- comment_string
---					eol
-					return $ CommentLine s
+	s <- comment_string
+--	eol
+	return $ CommentLine s
 
 nonempty_line = do
-					indention 
-					s <- hron_string
---					eol
-					return $ NonEmptyLine s
+	indention 
+	s <- hron_string
+--	eol
+	return $ NonEmptyLine s
 
 value_line = nonempty_line <|> comment_line <|> empty_line 
 
