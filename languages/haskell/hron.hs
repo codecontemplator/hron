@@ -42,7 +42,7 @@ traceM msg = trace msg (return ())
 
 --void p = p >> (return ())
 
-eol = void(oneOf "\n") -- <|> eof
+eol = void(char '\n') -- <|> eof
 any_indention = void(manyTill space eol)  -- fix this
 
 indent = do
