@@ -3,6 +3,7 @@ module HRON where
 import Text.Parsec(modifyState)
 import Text.ParserCombinators.Parsec
 import Debug.Trace
+import Control.Monad(void)
 
 type IndentParser a = GenParser Char Int a
 
@@ -39,7 +40,7 @@ instance Show HRON where
 traceM :: Monad m => String -> m ()
 traceM msg = trace msg (return ())
 
-void p = p >> (return ())
+--void p = p >> (return ())
 
 eol = void(oneOf "\n") -- <|> eof
 any_indention = void(manyTill space eol)  -- fix this
