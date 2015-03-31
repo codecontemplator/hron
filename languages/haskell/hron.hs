@@ -5,85 +5,110 @@ import Text.Parsec(modifyState)
 --import Text.Parsec.Indent
 import Text.ParserCombinators.Parsec
 import Control.Monad (replicateM)
-
-{-
-data Preprocessor = Preprocessor String
-data ValueLine = NonEmptyLine String | CommentLine String | EmptyLine 
-data Member = Value String [ValueLine] | Object String [Member] | Comment String | Empty
-data SyntaxTree = SyntaxTree [Preprocessor] [Member]
--}
-
-{-
-members = many member
-member =  value -- <|> object <|> comment <|> empty	
-value = withBlock Value (char '=' >> tag) valueLine
-	where tag = many (noneOf "\n")
-valueLine = do { return (NonEmptyLine "daniel") }
--}
-
-data NamedList = NamedList Name [Item] deriving (Show)
-type Name = String
-data Item = StringItem String | Comment String deriving (Show)
+import Debug.Trace
 
 type IndentParser a = GenParser Char Int a
 
---parse :: String -> Either ParseError a
-parse input = runParser (aNamedList) 0 "" input
+data Preprocessor = Preprocessor String deriving(Show)
+data ValueLine = NonEmptyLine String | CommentLine String | EmptyLine  deriving(Show)
+data Member = Value String [ValueLine] | Object String [Member] | Comment String | Empty deriving(Show)
+data SyntaxTree = SyntaxTree [Preprocessor] [Member] deriving(Show)
 
-manyx :: Int -> IndentParser a -> IndentParser [a]
-manyx n p = replicateM n p
+traceM :: Monad m => String -> m ()
+traceM msg = trace msg (return ())
 
---eol :: Parser ()
---eol = void (char '\n') <|> eof
-eol = char '\n'
+void p = p >> (return ())
 
-indent :: IndentParser ()
+eol = void(oneOf "\n") --	<|> eof
+any_indention = void(manyTill space eol)  -- fix this
+
 indent = do
  			modifyState (1 +)
- --			i <- getState
---			setState (i+1)
 			return ()
 
-indention :: IndentParser ()
+dedent = do
+ 			modifyState (\x -> x - 1)
+			return ()
+
 indention = do
 				i <- getState
-				manyx i (char '\t')
+				count i (char '\t')
 				return ()
 
-aNamedList :: IndentParser NamedList
-aNamedList = do
-  name <- aName
-  indent
-  items <- many1 (anItem <|> aComment)   
-  return (NamedList name items)
+empty_string = void $ manyTill space (try eol) 
 
-aComment :: IndentParser Item
-aComment = do
-	spaces
-	char '#'
-	x <- many1 alphaNum
-	eol
-	return (Comment x)
+hron_string = manyTill anyChar (try eol)
 
-aName :: IndentParser Name
-aName = do
-  s <- many1 alphaNum
-  _ <- char ':'
-  eol
-  return s
+comment_string = do
+					any_indention
+					char '#'
+					s <- hron_string
+					return s
 
-anItem :: IndentParser Item
-anItem = do
-  indention
-  i <- many1 alphaNum
-  eol
-  return (StringItem i)
+empty_line = do
+				empty_string 
+--				eol
+				return $ EmptyLine
 
-input_text :: String
+comment_line = do
+					s <- comment_string
+--					eol
+					return $ CommentLine s
+
+nonempty_line = do
+					indention 
+					s <- hron_string
+--					eol
+					return $ NonEmptyLine s
+
+value_line = nonempty_line <|> comment_line <|> empty_line 
+
+value_lines = many value_line
+
+value = do
+	indention
+	char '='
+	tag <- hron_string
+	traceM $ "tag: " ++ show tag
+	--eol
+	indent
+	lines <- value_lines
+	dedent
+	return $ Value tag lines
+
+empty = do
+	empty_string
+--	eol
+	return Empty
+
+comment = do 
+	cs <- comment_string 
+--	eol
+	return $ Comment cs
+
+object = do
+	indention
+	char '@'
+	tag <- hron_string
+--	eol
+	indent
+	mbs <- members
+	dedent
+	return $ Object tag mbs
+
+member =  value <|> object <|> comment <|> empty	
+members = many member
+
+hron_parse input = runParser members 0 "" input
+
 input_text = unlines [
-    "listName:",
-    "\titem1",
-    "\titem2",
-    "#comment",
-    "\titem3"
+    "=Welcome message",
+    "\tHello there",
+    "\tThis is hron speaking",
+    "=Svamp",
+    "\t10",
+    "\t20",
+    "@ObjDef",
+    "\t=V1",
+    "\t\t999"
   ]
