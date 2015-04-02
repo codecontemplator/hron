@@ -3,11 +3,6 @@ import HRON
 import System.IO  
 import Control.Monad
 
-fromRight           :: Either a b -> b
-fromRight (Left _)  = error "Either.Unwrap.fromRight: Argument takes form 'Left _'" -- yuck
-fromRight (Right x) = x
-
-
 mkTest id = TestCase $
 	do
 		hronFile <- openFile ("../../reference-data/" ++ id ++ ".hron") ReadMode
@@ -18,21 +13,21 @@ mkTest id = TestCase $
 		hSetEncoding hronActionLogFile utf8_bom
 		hronActionLog <- hGetContents hronActionLogFile
 
-		let tree = hron_parse hron
---		case tree of 
---			Left x -> putStrLn $ "failed " ++ show x
---		  	_ -> putStrLn ""
-		let log = show $ fromRight tree 
+		case parse hron of
+			Left error -> 
+				assertFailure (show error)
+			Right tree -> do
+				let log = show tree 
 
-		logFile <- openFile ("test-" ++ id ++ ".hron.actionlog") WriteMode
-		hSetEncoding logFile utf8_bom
-		hPutStr logFile log
+				logFile <- openFile ("test-" ++ id ++ ".hron.actionlog") WriteMode
+				hSetEncoding logFile utf8_bom
+				hPutStr logFile log
+				hClose logFile
 
-		assertEqual "action logs should be equal" hronActionLog log
+				assertEqual "action logs should be equal" hronActionLog log
 
 		hClose hronFile
 		hClose hronActionLogFile
-		hClose logFile
 
 
 tests = TestList [
