@@ -8,10 +8,10 @@
 
 module HRON (parse) where
 
-import Text.Parsec(modifyState)
-import Text.ParserCombinators.Parsec hiding(parse)
-import Control.Monad(void)
-import Data.List(isSuffixOf)
+import Text.Parsec                   (modifyState)
+import Text.ParserCombinators.Parsec hiding (parse)
+import Control.Monad                 (void)
+import Data.List                     (isSuffixOf)
 
 -----------------------------------------------------
 -- Parser type
@@ -23,18 +23,18 @@ type IndentParser a = GenParser Char Int a
 -- HRON Parse tree data structure
 -----------------------------------------------------
 
-data Preprocessor = Preprocessor String
+data Preprocessor  = Preprocessor String
 
-data ValueLine  = ContentLine String 
-                | CommentLine String String 
-                | EmptyLine String
+data ValueLine     = ContentLine String 
+                   | CommentLine String String 
+                   | EmptyLine String
 
-data Member = Value String [ValueLine] 
-            | Object String [Member] 
-            | Comment String String 
-            | Empty String
+data Member        = Value String [ValueLine] 
+                   | Object String [Member] 
+                   | Comment String String 
+                   | Empty String
 
-data HRON = HRON [Preprocessor] [Member]
+data HRON          = HRON [Preprocessor] [Member]
 
 -----------------------------------------------------
 -- Serialization of hron syntax tree which is used
@@ -42,29 +42,26 @@ data HRON = HRON [Preprocessor] [Member]
 -----------------------------------------------------
 
 instance Show Preprocessor where
-    show (Preprocessor s) = "PreProcessor:" ++ s
+    show (Preprocessor s)        = "PreProcessor:" ++ s
 
 instance Show ValueLine where
-    show (ContentLine s) = "ContentLine:" ++ s
-    show (CommentLine e s) = "CommentLine:" ++ (show.length) e ++ "," ++ s 
-    show (EmptyLine e)   = "EmptyLine:" ++ e
+    show (ContentLine s)         = "ContentLine:"  ++ s
+    show (CommentLine e s)       = "CommentLine:"  ++ (show.length) e ++ "," ++ s 
+    show (EmptyLine e)           = "EmptyLine:"    ++ e
 
 instance Show Member where
-    show (Value tag value_lines) = 
-        "Value_Begin:" ++ tag ++ "\n" ++
-        unlines (map show value_lines) ++
-        "Value_End:" ++ tag
-    show (Object tag members) = 
-        "Object_Begin:" ++ tag ++ "\n" ++
-        unlines (map show members) ++
-        "Object_End:" ++ tag
-    show (Comment e s) = "Comment:" ++ (show.length) e ++ "," ++ s 
-    show (Empty e) = "Empty:" ++ e
+    show (Value tag value_lines) = "Value_Begin:"  ++ tag             ++ "\n"  ++
+                                   unlines (map show value_lines)     ++
+                                   "Value_End:"    ++ tag
+    show (Object tag members)    = "Object_Begin:" ++ tag             ++ "\n"  ++
+                                   unlines (map show members)         ++
+                                   "Object_End:"   ++ tag
+    show (Comment e s)           = "Comment:"      ++ (show.length) e ++ "," ++ s 
+    show (Empty e)               = "Empty:"        ++ e
 
 instance Show HRON where
-    show (HRON preprocessors members) =
-        unlines (map show preprocessors) ++
-        unlines (map show members)
+    show (HRON preprocs members) = unlines (map show preprocs) ++ 
+                                   unlines (map show members)
 
 -----------------------------------------------------
 -- Parser implementation
@@ -159,7 +156,7 @@ object = do
 member =  try(value)   <|> 
           try(object)  <|> 
           try(comment) <|>
-          try(empty)    
+          try(empty)
 
 members = many member
 
