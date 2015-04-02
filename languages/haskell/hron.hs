@@ -59,7 +59,7 @@ instance Show Member where
         unlines (map show members) ++
         "Object_End:" ++ tag
     show (Comment e s) = "Comment:" ++ (show.length) e ++ "," ++ s 
-     show (Empty e) = "Empty:" ++ e
+    show (Empty e) = "Empty:" ++ e
 
 instance Show HRON where
     show (HRON preprocessors members) =
