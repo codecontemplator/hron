@@ -153,10 +153,11 @@ object = do
     dedent
     return $ Object tag ms
 
-member =  try(value)   <|> 
-          try(object)  <|> 
-          try(comment) <|>
-          try(empty)
+member =  
+	try(value)   <|> 
+    try(object)  <|> 
+    try(comment) <|>
+    try(empty)
 
 members = many member
 
