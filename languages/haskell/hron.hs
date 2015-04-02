@@ -154,7 +154,7 @@ object = do
     return $ Object tag ms
 
 member =  
-	try(value)   <|> 
+    try(value)   <|> 
     try(object)  <|> 
     try(comment) <|>
     try(empty)
