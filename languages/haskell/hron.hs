@@ -6,22 +6,24 @@ module HRON where
 import Text.Parsec(modifyState)
 import Text.ParserCombinators.Parsec
 import Control.Monad(void)
+import Data.List(isSuffixOf)
+--import Data.String.Utils(endswith)
 --import Debug.Trace
 
 type IndentParser a = GenParser Char Int a
 
 data Preprocessor = Preprocessor String
-data ValueLine = ContentLine String | CommentLine String | EmptyLine
-data Member = Value String [ValueLine] | Object String [Member] | Comment String | Empty
+data ValueLine = ContentLine String | CommentLine String String | EmptyLine String
+data Member = Value String [ValueLine] | Object String [Member] | Comment String String | Empty String
 data HRON = HRON [Preprocessor] [Member]
 
 instance Show Preprocessor where
-	show (Preprocessor s) = "Preprocessor:" ++ s
+	show (Preprocessor s) = "PreProcessor:" ++ s
 
 instance Show ValueLine where
 	show (ContentLine s) = "ContentLine:" ++ s
-	show (CommentLine s) = "CommentLine:" ++ s 
-	show EmptyLine       = "EmptyLine:"
+	show (CommentLine e s) = "CommentLine:" ++ (show.length) e ++ "," ++ s 
+	show (EmptyLine e)   = "EmptyLine:" ++ e
 
 instance Show Member where
 	show (Value tag value_lines) = 
@@ -32,8 +34,8 @@ instance Show Member where
 		"Object_Begin:" ++ tag ++ "\n" ++
 		unlines (map show members) ++
 		"Object_End:" ++ tag
-	show (Comment s) = "Comment:0," ++ s  -- todo: must count number of spaces
- 	show Empty = "Empty"
+	show (Comment e s) = "Comment:" ++ (show.length) e ++ "," ++ s 
+ 	show (Empty e) = "Empty:" ++ e
 
 instance Show HRON where
 	show (HRON preprocessors members) =
@@ -63,10 +65,10 @@ empty_string = many (oneOf " \t")
 std_string = many $ noneOf "\n" 
 
 comment_string = do
-	empty_string
+	e <- empty_string
 	char '#'
 	s <- std_string
-	return s
+	return (e,s)
 
 preprocessor = do
 	char '!'
@@ -77,14 +79,14 @@ preprocessor = do
 preprocessors = many preprocessor
 
 empty_line = do
-	empty_string
+	e <- empty_string
 	eol
-	return $ EmptyLine
+	return $ EmptyLine e
 
 comment_line = do
-	s <- comment_string
+	(e,s) <- comment_string
 	eol
-	return $ CommentLine s
+	return $ CommentLine e s
 
 nonempty_line = do
 	indention 
@@ -110,14 +112,14 @@ value = do
 	return $ Value tag lines
 
 empty = do
-	empty_string
+	e <- empty_string
 	eol
-	return Empty
+	return $ Empty e
 
 comment = do 
-	cs <- comment_string
+	(es,cs) <- comment_string
 	eol
-	return $ Comment cs
+	return $ Comment es cs
 
 object = do
 	indention
@@ -141,7 +143,8 @@ hron = do
 	mbrs <- members
 	return $ HRON pp mbrs
 
-hron_parse input = runParser hron 0 "" input
+hron_parse input = runParser hron 0 "" input'
+	where input' = if isSuffixOf "\n" input then input else input ++ "\n"  -- kind of ugly (but simple) way to handle eol = newline | eof
 
 {-
 

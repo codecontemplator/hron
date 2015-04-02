@@ -19,24 +19,27 @@ mkTest id = TestCase $
 		hronActionLog <- hGetContents hronActionLogFile
 
 		let tree = hron_parse hron
-		case tree of 
-			Left x -> putStrLn $ "failed " ++ show x
-		  	_ -> mzero
+--		case tree of 
+--			Left x -> putStrLn $ "failed " ++ show x
+--		  	_ -> putStrLn ""
 		let log = show $ fromRight tree 
+
 		logFile <- openFile ("test-" ++ id ++ ".hron.actionlog") WriteMode
 		hSetEncoding logFile utf8_bom
 		hPutStr logFile log
 
+		assertEqual "action logs should be equal" hronActionLog log
+
 		hClose hronFile
 		hClose hronActionLogFile
 		hClose logFile
-		assertEqual "action logs should be equal" hronActionLog log
 
 
 tests = TestList [
 	TestLabel "hello world" (mkTest "helloworld"),
 	TestLabel "simple" (mkTest "simple"),
-	TestLabel "random" (mkTest "random")
+	TestLabel "random" (mkTest "random"),
+	TestLabel "large" (mkTest "large")
 	]
 
 rt = runTestTT tests
