@@ -1,3 +1,11 @@
+-----------------------------------------------------
+-- A parser library in haskell for the HRON language
+--
+-- Author  : Daniel Brännström
+-- Date    : 2015-04-02
+-- License : Microsoft Public License (Ms-PL)
+-----------------------------------------------------
+
 module HRON (parse) where
 
 import Text.Parsec(modifyState)
