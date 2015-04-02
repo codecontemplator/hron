@@ -149,9 +149,9 @@ object = do
     tag <- std_string
     eol
     indent
-    mbs <- members
+    ms <- members
     dedent
-    return $ Object tag mbs
+    return $ Object tag ms
 
 member =  try(value)   <|> 
           try(object)  <|> 
@@ -161,9 +161,9 @@ member =  try(value)   <|>
 members = many member
 
 hron = do
-    pp <- preprocessors
-    mbrs <- members
-    return $ HRON pp mbrs
+    ps <- preprocessors
+    ms <- members
+    return $ HRON ps ms
 
 -----------------------------------------------------
 -- Parser helper
