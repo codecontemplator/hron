@@ -1,5 +1,5 @@
 -----------------------------------------------------
--- A parser library in haskell for the HRON language
+-- A parser library in Haskell for the HRON language
 --
 -- Author  : Daniel Brännström
 -- Date    : 2015-04-02

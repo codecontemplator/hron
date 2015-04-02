@@ -1,4 +1,4 @@
-HRON Parser in haskell
+HRON parser in Haskell
 ======================
 The hron parser is based on parsec. The intention of the library was to write code that mapped well to the bnf defintion of hron. The library was not written with performance in mind.
 
