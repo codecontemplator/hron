@@ -7,26 +7,36 @@ fromRight           :: Either a b -> b
 fromRight (Left _)  = error "Either.Unwrap.fromRight: Argument takes form 'Left _'" -- yuck
 fromRight (Right x) = x
 
-testHelloWorld = TestCase $
+
+mkTest id = TestCase $
 	do
-		hronFile <- openFile "../../reference-data/helloworld.hron" ReadMode
+		hronFile <- openFile ("../../reference-data/" ++ id ++ ".hron") ReadMode
 		hSetEncoding hronFile utf8_bom
 		hron <- hGetContents hronFile
-		hronActionLogFile <- openFile "../../reference-data/helloworld.hron.actionlog" ReadMode
+		
+		hronActionLogFile <- openFile ("../../reference-data/" ++ id ++ ".hron.actionlog") ReadMode
 		hSetEncoding hronActionLogFile utf8_bom
 		hronActionLog <- hGetContents hronActionLogFile
-		let tree = hron_parse (hron ++ "\n") -- todo: handle missing newline at end of file properly in parser
---		case tree of 
---		  Left x -> putStrLn $ "failed " ++ show x
---		  Right _ -> putStrLn "ok" 
+
+		let tree = hron_parse hron
+		case tree of 
+			Left x -> putStrLn $ "failed " ++ show x
+		  	_ -> mzero
 		let log = show $ fromRight tree 
---		putStrLn "------------------------"
---		putStrLn log
---		putStrLn "------------------------"
+		logFile <- openFile ("test-" ++ id ++ ".hron.actionlog") WriteMode
+		hSetEncoding logFile utf8_bom
+		hPutStr logFile log
+
+		hClose hronFile
+		hClose hronActionLogFile
+		hClose logFile
 		assertEqual "action logs should be equal" hronActionLog log
 
+
 tests = TestList [
-	TestLabel "hello world" testHelloWorld
+	TestLabel "hello world" (mkTest "helloworld"),
+	TestLabel "simple" (mkTest "simple"),
+	TestLabel "random" (mkTest "random")
 	]
 
 rt = runTestTT tests
