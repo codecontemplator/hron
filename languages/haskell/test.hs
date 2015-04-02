@@ -1,3 +1,11 @@
+-----------------------------------------------------
+-- Unit tests for module hron.hs
+--
+-- Author  : Daniel Brännström
+-- Date    : 2015-04-02
+-- License : Microsoft Public License (Ms-PL)
+-----------------------------------------------------
+
 import Test.HUnit
 import HRON
 import System.IO  
@@ -37,4 +45,5 @@ tests = TestList [
 	TestLabel "large" (mkTest "large")
 	]
 
-rt = runTestTT tests
+runTests = runTestTT tests
+rt = runTests

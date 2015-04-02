@@ -1,15 +1,19 @@
-hunit for testing	
+HRON Parser in haskell
+======================
+The hron parser is based on parsec. The intention of the library was to write code that mapped well to the bnf defintion of hron. The library was not written with performance in mind.
 
-http://hackage.haskell.org/package/indents-0.3.3
-https://hackage.haskell.org/package/indents-0.3.3/docs/Text-Parsec-Indent.html
+Install
+-------
+Copy hron.hs into your source code folder and import the module.
 
-http://changaco.oy.lc/blog/parse-indented-tree/
-http://book.realworldhaskell.org/read/using-parsec.html
+```Haskell
+import hron
+```
 
-https://gist.github.com/sw17ch/2048516#file-indented_parsec_example-lhs
+Using the library
+-----------------
+Sample usage:
+```Haskell
+parse "...hron..."
+```
 
-http://unbui.lt/#!/post/haskell-parsec-basics
-
-http://stackoverflow.com/questions/7753959/parsec-error-combinator-many-is-applied-to-a-parser-that-accepts-an-empty-s
-
-http://stackoverflow.com/questions/19899931/haskell-parsec-combinator-many-is-applied-to-a-parser-that-accepts-an-empty-st
