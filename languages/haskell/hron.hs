@@ -20,7 +20,7 @@ import Data.List                     (isSuffixOf)
 type IndentParser a = GenParser Char Int a
 
 -----------------------------------------------------
--- HRON Parse tree data structure
+-- HRON parse tree data structure
 -----------------------------------------------------
 
 data Preprocessor  = Preprocessor String
