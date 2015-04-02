@@ -51,10 +51,10 @@ instance Show ValueLine where
 
 instance Show Member where
     show (Value tag value_lines) = "Value_Begin:"  ++ tag             ++ "\n"  ++
-                                   unlines (map show value_lines)     ++
+                                   unlines (map show value_lines)              ++
                                    "Value_End:"    ++ tag
     show (Object tag members)    = "Object_Begin:" ++ tag             ++ "\n"  ++
-                                   unlines (map show members)         ++
+                                   unlines (map show members)                  ++
                                    "Object_End:"   ++ tag
     show (Comment e s)           = "Comment:"      ++ (show.length) e ++ "," ++ s 
     show (Empty e)               = "Empty:"        ++ e
