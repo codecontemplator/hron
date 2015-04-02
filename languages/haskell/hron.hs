@@ -1,9 +1,12 @@
+-- http://stackoverflow.com/questions/6723208/trivial-parsec-example-produces-a-type-error
+{-# LANGUAGE NoMonomorphismRestriction #-}
+
 module HRON where
 
 import Text.Parsec(modifyState)
 import Text.ParserCombinators.Parsec
-import Debug.Trace
 import Control.Monad(void)
+--import Debug.Trace
 
 type IndentParser a = GenParser Char Int a
 
@@ -37,13 +40,8 @@ instance Show HRON where
 		unlines (map show preprocessors) ++
 		unlines (map show members)
 
-traceM :: Monad m => String -> m ()
-traceM msg = trace msg (return ())
-
---void p = p >> (return ())
-
-eol = void(char '\n') -- <|> eof
-any_indention = void(manyTill space eol)  -- fix this
+--traceM :: Monad m => String -> m ()
+--traceM msg = trace msg (return ())
 
 indent = do
 	modifyState (\i -> i + 1)
@@ -58,42 +56,54 @@ indention = do
 	count i (char '\t')
 	return ()
 
-empty_string = void $ manyTill space (try eol) 
+eol = char '\n'
 
-hron_string = manyTill anyChar (try eol)
+empty_string = many (oneOf " \t")
+
+std_string = many $ noneOf "\n" 
 
 comment_string = do
-	try $ spaces >> char '#'  -- todo: spaces might consume an entire row
-	s <- hron_string
+	empty_string
+	char '#'
+	s <- std_string
 	return s
 
 preprocessor = do
 	char '!'
-	s <- hron_string
+	s <- std_string
+	eol
 	return $ Preprocessor s
 
 preprocessors = many preprocessor
 
 empty_line = do
-	empty_string 
+	empty_string
+	eol
 	return $ EmptyLine
 
 comment_line = do
 	s <- comment_string
+	eol
 	return $ CommentLine s
 
 nonempty_line = do
 	indention 
-	s <- hron_string
+	s <- std_string
+	eol
 	return $ ContentLine s
 
-value_line = nonempty_line <|> comment_line <|> empty_line 
+value_line = 
+	try(nonempty_line) <|> 
+    try(comment_line)  <|> 
+    try(empty_line)
 
-value_lines = many (try value_line)
+value_lines = many value_line
 
 value = do
-	try $ indention >> char '='	
-	tag <- hron_string
+	indention
+	char '='
+	tag <- std_string
+	eol
 	indent
 	lines <- value_lines
 	dedent
@@ -101,21 +111,29 @@ value = do
 
 empty = do
 	empty_string
+	eol
 	return Empty
 
 comment = do 
-	cs <- comment_string 
+	cs <- comment_string
+	eol
 	return $ Comment cs
 
 object = do
-	try $ indention >> char '@'
-	tag <- hron_string
+	indention
+	char '@'
+	tag <- std_string
+	eol
 	indent
 	mbs <- members
 	dedent
 	return $ Object tag mbs
 
-member =  value <|> object <|> comment <|> empty	
+member =  try(value)   <|> 
+		  try(object)  <|> 
+		  try(comment) <|>
+		  try(empty)	
+
 members = many member
 
 hron = do
@@ -126,8 +144,13 @@ hron = do
 hron_parse input = runParser hron 0 "" input
 
 {-
+
 input_text = unlines [
-	"!abc",
+--	"!abc",
+	"#comment @",
+	"@x",
+	"\t=y",
+	"\t\t1010101",
     "=Welcome message",
     "\tHello there",
     "\tThis is hron speaking",
@@ -136,19 +159,22 @@ input_text = unlines [
     "\t20",
     "@ObjDef",
     "\t=V1",
-    "\t\t999"
+    "\t\t999",
+    "=XX",
+    "\tabcde"
   ]
 
+
 input_text2 = unlines [
-	"# object values are started with @",
 	"@Common",
 	"\t=LogPath",
 	"\t\tLogsCurrentDay",
 	"\t=WelcomeMessage",
-	"\t\tHello there!",
-	"",
-	"\t\tString values in hron is started with"
+	"\t\tHello there!"
+--	"",
+--	"\t\tString values in hron is started with"
 	]
+
 
 input_text3 = unlines [
 	"# object values are started with '@'",
