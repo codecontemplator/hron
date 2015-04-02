@@ -1,6 +1,3 @@
--- http://stackoverflow.com/questions/6723208/trivial-parsec-example-produces-a-type-error
-{-# LANGUAGE NoMonomorphismRestriction #-}
-
 module HRON (parse) where
 
 import Text.Parsec(modifyState)
